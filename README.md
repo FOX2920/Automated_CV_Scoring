@@ -26,8 +26,8 @@ This repository provides an application for **automated CV evaluation and email-
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/cv-evaluation.git
-   cd cv-evaluation
+   git clone https://github.com/FOX2920/Automated_CV_Scoring.git
+   cd Automated_CV_Scoring
    ```
 
 2. **Install Required Libraries**:
