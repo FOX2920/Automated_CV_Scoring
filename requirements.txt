@@ -1,5 +1,8 @@
-pypdf 
-python-docx
-google-generativeai
 requests
-gunicorn
+pandas
+bs4
+google-generativeai
+tqdm
+pypdf
+python-docx
+pytz
