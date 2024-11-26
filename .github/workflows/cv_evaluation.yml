@@ -3,7 +3,7 @@ name: Daily CV Evaluation
 on:
   schedule:
     # Lên lịch chạy vào 8h sáng mỗi ngày (theo UTC)
-    - cron: '0 3 * * *'  # 1:00 UTC tương đương 8:00 giờ Việt Nam (UTC+7)
+    - cron: '0 4 * * *'  # 1:00 UTC tương đương 8:00 giờ Việt Nam (UTC+7)
   workflow_dispatch: # Cho phép chạy thủ công
 
 jobs:
