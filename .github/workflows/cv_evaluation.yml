@@ -1,0 +1,39 @@
+name: Daily CV Evaluation
+
+on:
+  schedule:
+    # Lên lịch chạy vào 8h sáng mỗi ngày (theo UTC)
+    - cron: '0 1 * * *'  # 1:00 UTC tương đương 8:00 giờ Việt Nam (UTC+7)
+  workflow_dispatch: # Cho phép chạy thủ công
+
+jobs:
+  evaluate-and-send:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Thiết lập repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Thiết lập Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' # Dùng phiên bản Python 3.10 hoặc cao hơn
+
+    # Cài đặt các package cần thiết
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt  # Nếu có file requirements.txt
+        pip install requests pandas bs4 google-generativeai tqdm pypdf python-docx pytz
+
+    # Chạy script đánh giá CV
+    - name: Run CV Evaluation Script
+      env:
+        BASE_API_KEY: ${{ secrets.BASE_API_KEY }}
+        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        EMAIL: ${{ secrets.EMAIL }}
+        PASSWORD: ${{ secrets.PASSWORD }}
+      run: |
+        python app.py
