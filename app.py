@@ -383,7 +383,7 @@ if __name__ == "__main__":
     print("Bắt đầu gửi email kết quả...")
     email_gui = os.getenv('EMAIL')
     mat_khau = os.getenv('PASSWORD')  # Mật khẩu ứng dụng
-    email_nhan = '21522557@gm.uit.edu.vn'
+    email_nhan = os.getenv('EMAIL_TO')
 
     gui_ket_qua_cham_diem(
         email_gui=email_gui,
