@@ -3,7 +3,7 @@ name: Daily CV Evaluation
 on:
   schedule:
     # Lên lịch chạy vào 8h sáng mỗi ngày (theo UTC)
-    - cron: '0 5 * * *'  # 1:00 UTC tương đương 8:00 giờ Việt Nam (UTC+7)
+    - cron: '0 4 * * *'  # 1:00 UTC tương đương 8:00 giờ Việt Nam (UTC+7)
   workflow_dispatch: # Cho phép chạy thủ công
 
 jobs:
@@ -34,6 +34,7 @@ jobs:
         BASE_API_KEY: ${{ secrets.BASE_API_KEY }}
         GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         EMAIL: ${{ secrets.EMAIL }}
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}
         PASSWORD: ${{ secrets.PASSWORD }}
       run: |
         python app.py
