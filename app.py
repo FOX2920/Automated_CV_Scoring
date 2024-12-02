@@ -364,7 +364,8 @@ if __name__ == "__main__":
                 'Trình độ học vấn': evaluation["trinh_do_hoc_van"],
                 'Kỹ năng mềm': evaluation["ky_nang_mem"],
                 'Điểm tổng quát': overall_score,
-                'Tóm tắt': evaluation["tom_tat"]
+                'Tóm tắt': evaluation["tom_tat"],
+                'Link ứng viên': f"https://hiring.base.vn/opening/{job['id']}?candidate={candidate['id']}"
             }
             all_results.append(result)
 
