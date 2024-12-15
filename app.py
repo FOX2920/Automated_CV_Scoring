@@ -371,11 +371,11 @@ if __name__ == "__main__":
 
             # Add delay to respect API limits
             time.sleep(3)
-
+    file_path = 'cv_evaluations.csv'
     # Create final DataFrame and save to CSV
     if all_results:
         results_df = pd.DataFrame(all_results)
-        file_path = 'cv_evaluations.csv'
+        
         results_df.to_csv(file_path, index=False, encoding='utf-8-sig')
     else:
         print("No results to save")
