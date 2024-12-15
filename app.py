@@ -311,85 +311,90 @@ if __name__ == "__main__":
 
     all_results = []
 
-    # Process each job
-    for _, job in open_jobs.iterrows():
-        print(f"Processing job: {job['name']}")
+    if open_jobs.empty:
+        print("Không có công việc nào đang mở.")
+    else:
+        # Process each job
+        for _, job in open_jobs.iterrows():
+            print(f"Processing job: {job['name']}")
 
-        # Get recent candidates
-        candidates_data = get_recent_candidates(job['id'])
-        if 'candidates' not in candidates_data:
-            print(f"No candidates found for job {job['name']}")
-            continue
-
-        # Process each candidate
-        for candidate in tqdm(candidates_data['candidates'], desc=f"Processing candidates for {job['name']}", leave=False):
-            if not candidate.get('cvs'):
+            # Get recent candidates
+            candidates_data = get_recent_candidates(job['id'])
+            if 'candidates' not in candidates_data or not candidates_data['candidates']:
+                print(f"No candidates found for job {job['name']}")
                 continue
 
-            cv_url = candidate['cvs'][0] if isinstance(candidate['cvs'], list) and len(candidate['cvs']) > 0 else None
-            if not cv_url:
-                continue
-            # Convert 'since' Unix timestamp to UTC+7
-            time_apply = pd.to_datetime(int(candidate['since']), unit='s', utc=True).tz_convert('Asia/Ho_Chi_Minh')
-            # Get CV text
-            cv_text = get_cv_text(cv_url)
-            if not cv_text:
-                continue
+            # Process each candidate
+            for candidate in tqdm(candidates_data['candidates'], desc=f"Processing candidates for {job['name']}", leave=False):
+                if not candidate.get('cvs'):
+                    continue
 
-            # Evaluate CV
-            evaluation = evaluate_cv(job['content'], cv_text)
-            if not evaluation:
-                continue
+                cv_url = candidate['cvs'][0] if isinstance(candidate['cvs'], list) and len(candidate['cvs']) > 0 else None
+                if not cv_url:
+                    continue
 
-            # Calculate overall score
-            overall_score = round(sum([
-                evaluation["muc_do_phu_hop"],
-                evaluation["ky_nang_ky_thuat"],
-                evaluation["kinh_nghiem"],
-                evaluation["trinh_do_hoc_van"],
-                evaluation["ky_nang_mem"]
-            ]) / 5, 2)
+                # Convert 'since' Unix timestamp to UTC+7
+                time_apply = pd.to_datetime(int(candidate['since']), unit='s', utc=True).tz_convert('Asia/Ho_Chi_Minh')
 
-            # Store results
-            result = {
-                'Job ID': job['id'],
-                'Job Name': job['name'],
-                'Candidate ID': candidate['id'],
-                'Candidate Name': unescape(candidate['name']),
-                'CV URL': cv_url,
-                'Ngày ứng tuyển': time_apply,
-                'Mức độ phù hợp': evaluation["muc_do_phu_hop"],
-                'Kỹ năng kỹ thuật': evaluation["ky_nang_ky_thuat"],
-                'Kinh nghiệm': evaluation["kinh_nghiem"],
-                'Trình độ học vấn': evaluation["trinh_do_hoc_van"],
-                'Kỹ năng mềm': evaluation["ky_nang_mem"],
-                'Điểm tổng quát': overall_score,
-                'Tóm tắt': evaluation["tom_tat"],
-                'Link ứng viên': f"https://hiring.base.vn/opening/{job['id']}?candidate={candidate['id']}"
-            }
-            all_results.append(result)
+                # Get CV text
+                cv_text = get_cv_text(cv_url)
+                if not cv_text:
+                    continue
 
-            # Add delay to respect API limits
-            time.sleep(3)
-    file_path = 'cv_evaluations.csv'
+                # Evaluate CV
+                evaluation = evaluate_cv(job['content'], cv_text)
+                if not evaluation:
+                    continue
+
+                # Calculate overall score
+                overall_score = round(sum([
+                    evaluation["muc_do_phu_hop"],
+                    evaluation["ky_nang_ky_thuat"],
+                    evaluation["kinh_nghiem"],
+                    evaluation["trinh_do_hoc_van"],
+                    evaluation["ky_nang_mem"]
+                ]) / 5, 2)
+
+                # Store results
+                result = {
+                    'Job ID': job['id'],
+                    'Job Name': job['name'],
+                    'Candidate ID': candidate['id'],
+                    'Candidate Name': unescape(candidate['name']),
+                    'CV URL': cv_url,
+                    'Ngày ứng tuyển': time_apply,
+                    'Mức độ phù hợp': evaluation["muc_do_phu_hop"],
+                    'Kỹ năng kỹ thuật': evaluation["ky_nang_ky_thuat"],
+                    'Kinh nghiệm': evaluation["kinh_nghiem"],
+                    'Trình độ học vấn': evaluation["trinh_do_hoc_van"],
+                    'Kỹ năng mềm': evaluation["ky_nang_mem"],
+                    'Điểm tổng quát': overall_score,
+                    'Tóm tắt': evaluation["tom_tat"],
+                    'Link ứng viên': f"https://hiring.base.vn/opening/{job['id']}?candidate={candidate['id']}"
+                }
+                all_results.append(result)
+
+                # Add delay to respect API limits
+                time.sleep(3)
+
     # Create final DataFrame and save to CSV
     if all_results:
         results_df = pd.DataFrame(all_results)
-        
+        file_path = 'cv_evaluations.csv'
         results_df.to_csv(file_path, index=False, encoding='utf-8-sig')
+
+        # Sau đó, gửi email kết quả
+        print("Bắt đầu gửi email kết quả...")
+        email_gui = os.getenv('EMAIL')
+        mat_khau = os.getenv('PASSWORD')  # Mật khẩu ứng dụng
+        email_nhan = os.getenv('EMAIL_TO')
+
+        gui_ket_qua_cham_diem(
+            email_gui=email_gui,
+            mat_khau=mat_khau,
+            email_nhan=email_nhan,
+            duong_dan_file=file_path,
+            ten_cong_ty="Công ty A Plus Mineral Material Corporation"
+        )
     else:
-        print("No results to save")
-
-    # Sau đó, gửi email kết quả
-    print("Bắt đầu gửi email kết quả...")
-    email_gui = os.getenv('EMAIL')
-    mat_khau = os.getenv('PASSWORD')  # Mật khẩu ứng dụng
-    email_nhan = os.getenv('EMAIL_TO')
-
-    gui_ket_qua_cham_diem(
-        email_gui=email_gui,
-        mat_khau=mat_khau,
-        email_nhan=email_nhan,
-        duong_dan_file=file_path,
-        ten_cong_ty="Công ty A Plus Mineral Material Corporation"
-    )
+        print("Không có kết quả đánh giá nào để lưu hoặc gửi email.")
